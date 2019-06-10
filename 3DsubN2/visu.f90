@@ -129,23 +129,24 @@ endif
 !!$!############################################################################
 
 !!$!############################################################################
-!!VELOCITY
-!uvisu=0.
-!all fine_to_coarseV(1,ux1,uvisu)
-!993 format('ux',I4.4)
-!      write(filename, 993) itime/imodulo
-!call decomp_2d_write_one(1,uvisu,filename,2)
-!uvisu=0.
-!call fine_to_coarseV(1,uy1,uvisu)
-!994 format('uy',I4.4)
-!      write(filename, 994) itime/imodulo
-!call decomp_2d_write_one(1,uvisu,filename,2)
-!print *,'dimension of uvisu',shape(uvisu)
-!uvisu=0.
-!call fine_to_coarseV(1,uz1,uvisu)
-!995 format('uz',I4.4)
-!      write(filename, 995) itime/imodulo
-!call decomp_2d_write_one(1,uvisu,filename,2)
+!!$!VELOCITY
+uvisu=0.
+call fine_to_coarseV(1,ux1,uvisu)
+993 format('ux',I4.4)
+      write(filename, 993) itime/imodulo
+  call decomp_2d_write_one(1,uvisu,filename,2)
+
+uvisu=0.
+call fine_to_coarseV(1,uy1,uvisu)
+994 format('uy',I4.4)
+      write(filename, 994) itime/imodulo
+call decomp_2d_write_one(1,uvisu,filename,2)
+
+uvisu=0.
+call fine_to_coarseV(1,uz1,uvisu)
+995 format('uz',I4.4)
+      write(filename, 995) itime/imodulo
+call decomp_2d_write_one(1,uvisu,filename,2)
 
 !############################################################################
 
@@ -218,7 +219,7 @@ endif
 if (nrank==5809) then
    if (itime==ifirst) then
       write(filename, 923) nrank
-     open(nrank,file=filename,form='unformatted')
+      open(nrank,file=filename,form='unformatted')
       print *,nrank, ' cores to',xstart(2),xend(2),xstart(3),xend(3)
    endif
    write(nrank) (((ux1(i,j,k),i=1,xsize(1),8),j=1,1),k=4,4),&
@@ -582,14 +583,14 @@ call interi6(tb1,ta1,di1,sx,cifip6,cisip6,ciwip6,cifx6,cisx6,ciwx6,&
 !The pressure field on the main mesh is in tb1
 
 !PRESSURE
-!1901 format('InstP',I7.7)
-!rite(filenameP,1901) itime
-!call decomp_2d_write_plane(1,tb1,1,17,trim(filenameP)//".dat")
+1901 format('InstP',I7.7)
+     write(filenameP,1901) itime
+     call decomp_2d_write_plane(1,tb1,1,150,trim(filenameP)//".dat")
 
-!if (nrank==0) then
-!	write(*,1391) itime
-!	1391    format('Vorticity_Collection at Time step =',i7)
-!endif
+   if (nrank==0) then
+        write(*,1391) itime
+1391    format('Vorticity_Collection at Time step =',i7)
+     endif
 
 end subroutine VISU_PRE
 
@@ -602,10 +603,10 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
 !
 !############################################################################
 
-   USE param
-   USE variables
-   USE decomp_2d
-   USE decomp_2d_io
+  USE param
+  USE variables
+  USE decomp_2d
+  USE decomp_2d_io
 
    implicit none
   
@@ -620,7 +621,6 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
    real(mytype) :: xp,xvis
    integer :: code,icomplet,ivis
    integer :: ijk,nvect1,nvect2,nvect3,i,j,k
-   integer :: ux1shape,uy1shape,uz1shape
    character(len=20) nfichier,nfichier1
    character(len=20) :: filename
    character(len=50) :: filenameU,  filenameV,  filenameW, filenameO
@@ -867,6 +867,7 @@ subroutine VISU_SUBDOMAIN  (ux1,uy1,uz1,ppx,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1
   USE decomp_2d_io
 
   implicit none
+
   TYPE(DECOMP_INFO) :: phG
   real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1,phi1,ppx
   real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: Oa1,Ob1,Oc1
@@ -928,10 +929,6 @@ subroutine VISU_SUBDOMAIN  (ux1,uy1,uz1,ppx,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1
          (tb1(ijk,1,1)-td1(ijk,1,1))**2)
   enddo
 
-
-
-
-
 1912 format('InstN23D_UVWP',I7.7)
       write(filename,1912) itime
 
@@ -943,12 +940,6 @@ subroutine VISU_SUBDOMAIN  (ux1,uy1,uz1,ppx,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1
         write(*,1291) itime
 1291    format('Vorticity_Collection at Time step =',i7)
      endif   
-  
-!1923 format('Usub_Zc,'I4.4)
-!   write (filename,1923) itime
-!   call decomp_2d_write_plane(1,ux1,3,nz/2,filename)
-
-     
   !!
   !############################################################################
   !PRESSURE
