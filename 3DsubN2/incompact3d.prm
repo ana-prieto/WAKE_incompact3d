@@ -1,0 +1,46 @@
+#
+# Random disrtibuted number
+#
+120.   #xlx  # Lx (Size of the box in x-direction)
+15.    #yly  # Ly (Size of the box in y-direction) 
+15.    #zlz  # Lz (Size of the box in z-direction) 
+5000.  #re   # Reynolds number
+1.     #sc   # Schmidt number (if passive scalar)
+1.     #u1   # u1 (max velocity) (for inflow condition)
+1.     #u2   # u2 (min velocity) (for inflow condition) 
+0.0    #noise# Turbulence intensity (1=100%) !! Initial condition
+0.0    #noise1# Turbulence intensity (1=100%) !! Inflow condition
+0.005  #dt   # Time step
+#
+# INCOMPACT3D Flow configuration
+#
+2      #nclx   # nclx (BC)
+0      #ncly   # ncly (BC) 
+0      #nclz   # nclz (BC)
+1      #itype  # Type of flow  
+1      #iin    # Inflow condition (1: classic, 2: turbinit, 3: impinging jet, 4: interp LES data)
+2001    #ifirst
+5000   #ilast  # Last iteration 
+4      #nscheme# Temporal scheme (1:AB2, 2: RK3, 3:RK4, 4:AB3)
+0      #istret # y mesh refinement (0:no, 1:center, 2:both sides, 3:bottom)
+0.1    #beta   # Refinement parameter (beta) 
+1      #iskew  # (0:urotu, 1:skew, for the convective terms)
+0      #ifilter# (0:no filter, 1:filter)
+0      #iscalar# (0: no scalar, 1:scalar)
+#
+# INCOMPACT 3D File parameters 
+#
+../TEST5    #filepath # Relative data path
+1           #irestart
+sauve.dat   #filestart# Name of initial flow field
+200         #isave    # Frequency for writing backup file (100) 
+250         #imodulo  # Frequency for visualization for VISU_INSTA (200)
+#
+# INCOMPACT 3D Body  old school
+#
+1     #ivirt# IBM? (1: old school, 2: Lagrangian Poly)
+5.    #cex  # X-centre position of the solid body
+6.    #cey  # Y-centre position of the solid body
+0.    #cez  # Z-centre position of the solid body
+0.5   #re   # Radius of the solid body
+#
