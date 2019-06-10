@@ -66,20 +66,21 @@ endif
 
 
 !!$!############################################################################
-!!$!VORTICITY
-di1=0.
-do ijk=1,nvect1
-   di1(ijk,1,1)=sqrt((tf1(ijk,1,1)-th1(ijk,1,1))**2+&
-        (tg1(ijk,1,1)-tc1(ijk,1,1))**2+&
-	(tb1(ijk,1,1)-td1(ijk,1,1))**2)
-enddo
-uvisu=0.
-call fine_to_coarseV(1,di1,uvisu)
-990 format('vort',I3.3)
-   write(filename, 990) itime/imodulo
-call decomp_2d_write_one(1,uvisu,filename,2)
-call decomp_2d_write_one(nx_global,ny_global,nz_global,&
-     1,di1,filename)
+!!VORTICITY
+!di1=0.
+!do ijk=1,nvect1
+!   di1(ijk,1,1)=sqrt((tf1(ijk,1,1)-th1(ijk,1,1))**2+&
+!        (tg1(ijk,1,1)-tc1(ijk,1,1))**2+&
+!        (tb1(ijk,1,1)-td1(ijk,1,1))**2)
+!enddo
+!uvisu=0.
+!call fine_to_coarseV(1,di1,uvisu)
+!990 format('vort',I3.3)
+!990 format('vort', I4.4)
+!write(filename, 990) itime/imodulo
+!call decomp_2d_write_one(1,uvisu,filename,2)
+!call decomp_2d_write_one(nx_global,ny_global,nz_global,&
+!     1,di1,filename)
 !!$!############################################################################
 
 !!$!############################################################################
@@ -607,38 +608,38 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
   USE decomp_2d
   USE decomp_2d_io
 
-  implicit none
+   implicit none
+  
+   TYPE(DECOMP_INFO) :: phG
+   real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1,phi1
+   real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: Oa1,Ob1,Oc1
+   real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
+   real(mytype),dimension(ysize(1),ysize(2),ysize(3)) :: ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2
+   real(mytype),dimension(zsize(1),zsize(2),zsize(3)) :: ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3
+   real(mytype),dimension(xszV(1),xszV(2),xszV(3)) :: uvisu 
 
-  TYPE(DECOMP_INFO) :: phG
-  real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1,phi1
-  real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: Oa1,Ob1,Oc1
-  real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
-  real(mytype),dimension(ysize(1),ysize(2),ysize(3)) :: ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2
-  real(mytype),dimension(zsize(1),zsize(2),zsize(3)) :: ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3
-  real(mytype),dimension(xszV(1),xszV(2),xszV(3)) :: uvisu 
+   real(mytype) :: xp,xvis
+   integer :: code,icomplet,ivis
+   integer :: ijk,nvect1,nvect2,nvect3,i,j,k
+   character(len=20) nfichier,nfichier1
+   character(len=20) :: filename
+   character(len=50) :: filenameU,  filenameV,  filenameW, filenameO
+   character(len=50) :: filenameO1, filenameO2, filenameO3, filenameD
 
-  real(mytype) :: xp,xvis
-  integer :: code,icomplet,ivis
-  integer :: ijk,nvect1,nvect2,nvect3,i,j,k
-  character(len=20) nfichier,nfichier1
-  character(len=20) :: filename
-  character(len=50) :: filenameU,  filenameV,  filenameW, filenameO
-  character(len=50) :: filenameO1, filenameO2, filenameO3, filenameD
-
-  nvect1=xsize(1)*xsize(2)*xsize(3)
+   nvect1=xsize(1)*xsize(2)*xsize(3)
 
 
-  1911 format('InstU',I7.7)   
-  1912 format('InstV',I7.7)
-  1913 format('InstW',I7.7)
+!	1911 format('InstU',I7.7)   
+!	1912 format('InstV',I7.7)
+!	1913 format('InstW',I7.7)
 
-     write(filenameU,1911) itime
-     write(filenameV,1912) itime
-     write(filenameW,1913) itime
-
-     call decomp_2d_write_plane(1,ux1,1,150,trim(filenameU)//".dat")
-     call decomp_2d_write_plane(1,uy1,1,150,trim(filenameV)//".dat")
-     call decomp_2d_write_plane(1,uz1,1,150,trim(filenameW)//".dat")
+!     write(filenameU,1911) itime
+!     write(filenameV,1912) itime
+!     write(filenameW,1913) itime
+      
+!     call decomp_2d_write_plane(1,ux1,1,17,trim(filenameU)//".dat")
+!     call decomp_2d_write_plane(1,uy1,1,17,trim(filenameV)//".dat")
+!     call decomp_2d_write_plane(1,uz1,1,17,trim(filenameW)//".dat")
 
   !x-derivatives
   call derx (ta1,ux1,di1,sx,ffx,fsx,fwx,xsize(1),xsize(2),xsize(3),0)
@@ -673,118 +674,183 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
   !dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
   !############################################################################
   !COMPUTE VORTICITY MAGNITUDE IN di1
-   di1=0.
+  !di1=0.
 
   !Oa1, Omega1; Oa2, Omega2;  Oa3, Omega3
   !############################################################################
   !COMPUTE VORTICITY MAGNITUDE IN di1  
-   do k=1,xsize(3)
-   do j=1,xsize(2)
-   do i=1,xsize(1)
-     Oa1(i,j,k) = (tf1(i,j,k)-th1(i,j,k))
-     Ob1(i,j,k) = (tg1(i,j,k)-tc1(i,j,k))
-     Oc1(i,j,k) = (tb1(i,j,k)-td1(i,j,k))
-   enddo; enddo
-   enddo 
+  ! do k=1,xsize(3)
+  ! do j=1,xsize(2)
+  ! do i=1,xsize(1)
+  !   Oa1(i,j,k) = (tf1(i,j,k)-th1(i,j,k))
+  !   Ob1(i,j,k) = (tg1(i,j,k)-tc1(i,j,k))
+  !   Oc1(i,j,k) = (tb1(i,j,k)-td1(i,j,k))
+  ! enddo; enddo
+  ! enddo 
 
-1921 format('InstO1',I7.7)   
-1922 format('InstO2',I7.7)
-1923 format('InstO3',I7.7)
+!1921 format('InstO1',I7.7)   
+!1922 format('InstO2',I7.7)
+!1923 format('InstO3',I7.7)
 
-     write(filenameO1,1921) itime
-     write(filenameO2,1922) itime
-     write(filenameO3,1923) itime
+!     write(filenameO1,1921) itime
+!     write(filenameO2,1922) itime
+!     write(filenameO3,1923) itime
 
-     call decomp_2d_write_plane(1,Oa1,1,150,trim(filenameO1)//".dat")
-     call decomp_2d_write_plane(1,Ob1,1,150,trim(filenameO2)//".dat")
-     call decomp_2d_write_plane(1,Oc1,1,150,trim(filenameO3)//".dat")
+!     call decomp_2d_write_plane(1,Oa1,1,17,trim(filenameO1)//".dat")
+!     call decomp_2d_write_plane(1,Ob1,1,17,trim(filenameO2)//".dat")
+!    call decomp_2d_write_plane(1,Oc1,1,17,trim(filenameO3)//".dat")
 
 !############################################################################
 !COMPUTE VORTICITY MAGNITUDE IN di1
-   di1=0.
+  di1=0.
 
-    do k=1,xsize(3)
-    do j=1,xsize(2)
-    do i=1,xsize(1)
-      di1(i,j,k)=sqrt((tf1(i,j,k)-th1(i,j,k))**2+&
-                      (tg1(i,j,k)-tc1(i,j,k))**2+&
-                      (tb1(i,j,k)-td1(i,j,k))**2)
-    enddo; enddo
-    enddo
- 
-1941 format('InstO',I7.7)
-     write(filenameO,1941) itime
-     call decomp_2d_write_plane(1,di1,1,150,trim(filenameO)//".dat")
+  !  do k=1,xsize(3)
+  !  do j=1,xsize(2)
+  !  do i=1,xsize(1)
+  !    di1(i,j,k)=sqrt((tf1(i,j,k)-th1(i,j,k))**2+&
+  !                    (tg1(i,j,k)-tc1(i,j,k))**2+&
+  !                    (tb1(i,j,k)-td1(i,j,k))**2)
+  !  enddo; enddo
+  !  enddo
+
+  do ijk=1,nvect1
+    di1(ijk,1,1)=sqrt((tf1(ijk,1,1)-th1(ijk,1,1))**2+&
+         (tg1(ijk,1,1)-tc1(ijk,1,1))**2+&
+         (tb1(ijk,1,1)-td1(ijk,1,1))**2)
+  enddo
+
+!1941 format('InstO',I7.7)
+!     write(filenameO,1941) itime
+!     call decomp_2d_write_plane(1,di1,1,17,trim(filenameO)//".dat")
 
   !Curl of Omega
   !############################################################################
   !COMPUTE VORTICITY MAGNITUDE IN di1  
- !x-derivatives
-  call derx (ta1,Oa1,di1,sx,ffx,fsx,fwx,xsize(1),xsize(2),xsize(3),0)
-  call derx (tb1,Ob1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
-  call derx (tc1,Oc1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+! x-derivatives
+! call derx (ta1,Oa1,di1,sx,ffx,fsx,fwx,xsize(1),xsize(2),xsize(3),0)
+! call derx (tb1,Ob1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+!  call derx (tc1,Oc1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
   !y-derivatives
-  call transpose_x_to_y(Oa1,td2)
-  call transpose_x_to_y(Ob1,te2)
-  call transpose_x_to_y(Oc1,tf2)
-  call dery (ta2,td2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
-  call dery (tb2,te2,di2,sy,ffy,fsy,fwy,ppy,ysize(1),ysize(2),ysize(3),0)
-  call dery (tc2,tf2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+!  call transpose_x_to_y(Oa1,td2)
+!  call transpose_x_to_y(Ob1,te2)
+!  call transpose_x_to_y(Oc1,tf2)
+!  call dery (ta2,td2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+!  call dery (tb2,te2,di2,sy,ffy,fsy,fwy,ppy,ysize(1),ysize(2),ysize(3),0)
+!  call dery (tc2,tf2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
   !!z-derivatives
-  call transpose_y_to_z(td2,td3)
-  call transpose_y_to_z(te2,te3)
-  call transpose_y_to_z(tf2,tf3)
-  call derz (ta3,td3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
-  call derz (tb3,te3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
-  call derz (tc3,tf3,di3,sz,ffz,fsz,fwz,zsize(1),zsize(2),zsize(3),0)
+!  call transpose_y_to_z(td2,td3)
+!  call transpose_y_to_z(te2,te3)
+!  call transpose_y_to_z(tf2,tf3)
+! call derz (ta3,td3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+!  call derz (tb3,te3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+! call derz (tc3,tf3,di3,sz,ffz,fsz,fwz,zsize(1),zsize(2),zsize(3),0)
   !!all back to x-pencils
-  call transpose_z_to_y(ta3,td2)
-  call transpose_z_to_y(tb3,te2)
-  call transpose_z_to_y(tc3,tf2)
-  call transpose_y_to_x(td2,tg1)
-  call transpose_y_to_x(te2,th1)
-  call transpose_y_to_x(tf2,ti1)
-  call transpose_y_to_x(ta2,td1)
-  call transpose_y_to_x(tb2,te1)
-  call transpose_y_to_x(tc2,tf1)
+!  call transpose_z_to_y(ta3,td2)
+!  call transpose_z_to_y(tb3,te2)
+!  call transpose_z_to_y(tc3,tf2)
+!  call transpose_y_to_x(td2,tg1)
+!  call transpose_y_to_x(te2,th1)
+!  call transpose_y_to_x(tf2,ti1)
+! call transpose_y_to_x(ta2,td1)
+!  call transpose_y_to_x(tb2,te1)
+!  call transpose_y_to_x(tc2,tf1)
   !du/dx=ta1 du/dy=td1 and du/dz=tg1
   !dv/dx=tb1 dv/dy=te1 and dv/dz=th1
   !dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
   !############################################################################
   !COMPUTE VORTICITY MAGNITUDE IN di1
-   di1=0.; Oa1=0.;Ob1=0.;Oc1=0.;
+!   di1=0.; Oa1=0.;Ob1=0.;Oc1=0.;
 
-   do k=1,xsize(3)
-   do j=1,xsize(2)
-   do i=1,xsize(1)
-     Oa1(i,j,k) = (tf1(i,j,k)-th1(i,j,k))
-     Ob1(i,j,k) = (tg1(i,j,k)-tc1(i,j,k))
-     Oc1(i,j,k) = (tb1(i,j,k)-td1(i,j,k))
-   enddo; enddo
-   enddo 
+!  do k=1,xsize(3)
+!   do j=1,xsize(2)
+!   do i=1,xsize(1)
+!     Oa1(i,j,k) = (tf1(i,j,k)-th1(i,j,k))
+!     Ob1(i,j,k) = (tg1(i,j,k)-tc1(i,j,k))
+!     Oc1(i,j,k) = (tb1(i,j,k)-td1(i,j,k))
+!   enddo; enddo
+!   enddo 
 
-   do k=1,xsize(3)
-   do j=1,xsize(2)
-   do i=1,xsize(1)
-     di1(i,j,k) = ux1(i,j,k)*Oa1(i,j,k) + uy1(i,j,k)*Ob1(i,j,k) + &
-                  uz1(i,j,k)*Oc1(i,j,k)
-   enddo; enddo
-   enddo
-
-1931 format('InstD',I7.7)
-     write(filenameD,1931) itime
-     call decomp_2d_write_plane(1,di1,1,150,trim(filenameD)//".dat")
+!   do k=1,xsize(3)
+!   do j=1,xsize(2)
+!  do i=1,xsize(1)
+!     di1(i,j,k) = ux1(i,j,k)*Oa1(i,j,k) + uy1(i,j,k)*Ob1(i,j,k) + &
+!                 uz1(i,j,k)*Oc1(i,j,k)
+!   enddo; enddo
+!   enddo
+!
+!1931 format('InstD',I7.7)
+!    write(filenameD,1931) itime
+!    call decomp_2d_write_plane(1,di1,1,17,trim(filenameD)//".dat")
 
      
-     if (nrank==0) then
-        write(*,1291) itime
-1291    format('Vorticity_Collection at Time step =',i7)
-     endif   
+!     if (nrank==0) then
+!        write(*,1291) itime
+!1291    format('Vorticity_Collection at Time step =',i7)
+  !   endif   
   !!
   !############################################################################
   !PRESSURE
   !IT IS IN A SEPARATE SUBROUTINE
   !############################################################################
+
+
+993 format('ux_X',I2.2,'_',I4.4)
+994 format('uy_X',I2.2,'_',I4.4)
+995 format('uz_X',I2.2,'_',I4.4)
+931 format ('vort_X',I2.2,'_',I4.4)
+
+    xp=10
+    xvis=20.
+    do i=1,3
+       ivis = int((xvis+xp)/dx)+1
+       write(filename,993) int(xvis),itime/imodulo
+       call decomp_2d_write_plane(1,ux1,1,ivis,filename)
+
+       write(filename,994) int(xvis), itime/imodulo
+       call decomp_2d_write_plane(1,uy1,1,ivis,filename)
+
+       write(filename,995) int(xvis), itime/imodulo
+       call decomp_2d_write_plane(1,uz1,1,ivis,filename)
+
+       write(filename,931) int(xvis), itime/imodulo
+       call decomp_2d_write_plane(1,di1,1,ivis,filename)
+       xvis=xvis+20.
+    enddo
+
+
+!! Zc =0
+997 format('ux_Zc',I4.4)
+  write(filename,997) itime/imodulo
+  call decomp_2d_write_plane(1,ux1,3,nz/2,filename)
+
+998 format('uy_Zc',I4.4)
+  write(filename,998) itime/imodulo
+  call decomp_2d_write_plane(1,uy1,3,nz/2,filename)
+
+999 format('uz_Zc',I4.4)
+  write (filename,999) itime/imodulo
+  call decomp_2d_write_plane(1,uz1,3,nz/2,filename)
+
+930 format('vort_Zc',I4.4)
+  write(filename,930) itime/imodulo
+  call decomp_2d_write_plane(1,di1,3,nz/2,filename)
+
+do ijk=1,nvect1
+    di1(ijk,1,1)=di1(ijk,1,1)*di1(ijk,1,1)
+enddo
+
+893 format('enstrophy_X',I2.2,'_',I4.4)
+    xp=10
+    xvis=20.
+    do i=1,3
+       ivis=int((xvis+xp)/dx)+1
+       write(filename,893) int(xvis), itime/imodulo
+       call decomp_2d_write_plane(1,di1,1,ivis,filename)
+       xvis=xvis+20
+    enddo
+
+
+
 end subroutine VISU_SLICE
 
 !############################################################################
@@ -820,13 +886,55 @@ subroutine VISU_SUBDOMAIN  (ux1,uy1,uz1,ppx,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1
 
   nvect1=xsize(1)*xsize(2)*xsize(3)
 
+  !x-derivatives
+  call derx (ta1,ux1,di1,sx,ffx,fsx,fwx,xsize(1),xsize(2),xsize(3),0)
+  call derx (tb1,uy1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+  call derx (tc1,uz1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+  !y-derivatives
+  call transpose_x_to_y(ux1,td2)
+  call transpose_x_to_y(uy1,te2)
+  call transpose_x_to_y(uz1,tf2)
+  call dery (ta2,td2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+  call dery (tb2,te2,di2,sy,ffy,fsy,fwy,ppy,ysize(1),ysize(2),ysize(3),0)
+  call dery (tc2,tf2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+  !!z-derivatives
+  call transpose_y_to_z(td2,td3)
+  call transpose_y_to_z(te2,te3)
+  call transpose_y_to_z(tf2,tf3)
+  call derz (ta3,td3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+  call derz (tb3,te3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+  call derz (tc3,tf3,di3,sz,ffz,fsz,fwz,zsize(1),zsize(2),zsize(3),0)
+  !!all back to x-pencils
+  call transpose_z_to_y(ta3,td2)
+  call transpose_z_to_y(tb3,te2)
+  call transpose_z_to_y(tc3,tf2)
+  call transpose_y_to_x(td2,tg1)
+  call transpose_y_to_x(te2,th1)
+  call transpose_y_to_x(tf2,ti1)
+  call transpose_y_to_x(ta2,td1)
+  call transpose_y_to_x(tb2,te1)
+  call transpose_y_to_x(tc2,tf1)
+  !du/dx=ta1 du/dy=td1 and du/dz=tg1
+  !dv/dx=tb1 dv/dy=te1 and dv/dz=th1
+  !dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
 
-  1912 format('InstN03D_UVWP',I7.7)
 
-     write(filename,1912) itime
 
-!    call sub_domain(ux1,trim(filenameU)//".dat")
-     call sub_domain(ux1,uy1,uz1,ppx,trim(filename)//".dat")
+  !!VORTICITY COMPUTATION
+  di1=0.
+
+  do ijk=1,nvect1
+    di1(ijk,1,1)=sqrt((tf1(ijk,1,1)-th1(ijk,1,1))**2+&
+         (tg1(ijk,1,1)-tc1(ijk,1,1))**2+&
+         (tb1(ijk,1,1)-td1(ijk,1,1))**2)
+  enddo
+
+1912 format('InstN23D_UVWP',I7.7)
+      write(filename,1912) itime
+
+     ! call sub_domain(ux1,trim(filenameU)//".dat")
+     call sub_domain(ux1,uy1,uz1,di1,trim(filename)//".dat")
+
 
      if (nrank==0) then
         write(*,1291) itime
@@ -869,7 +977,7 @@ real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: tb1,di1
 integer :: code,icomplet,nxmsize,nymsize,nzmsize
 integer :: ijk,nvect1,nvect2,nvect3,i,j,k
 character(len=20) nfichier,nfichier1
-character(len=20) :: filenameP
+character(len=20) :: filename
 
 !WORK Z-PENCILS
 call interiz6(ta3,pp3,di3,sz,cifip6z,cisip6z,ciwip6z,cifz6,cisz6,ciwz6,&
@@ -886,6 +994,21 @@ call interi6(tb1,ta1,di1,sx,cifip6,cisip6,ciwip6,cifx6,cisx6,ciwx6,&
 
 !!X=0 (xlx/2) PLANE 
 !PRESSURE
+990 format('pp_x0',I4.4)
+write(filename,990) itime/imodulo
+call decomp_2d_write_plane(1,tb1,1,(nx+1)/2,filename)
+
+!!Z=0
+991 format('pp_z0',I4.4)
+write(filename,991) itime/imodulo
+call decomp_2d_write_plane(1,tb1,3,(nz+1)/2,filename)
+
+!!Y=0
+992 format ('pp_y0',I4.4)
+write(filename,992) itime/imodulo
+call decomp_2d_write_plane(1,tb1,2,1,filename)
+
+
 
 end subroutine PRE_SLICE
 
