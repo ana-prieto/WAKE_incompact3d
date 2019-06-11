@@ -445,6 +445,409 @@ endif
 
 end subroutine PROBE
 
+
+!############################################################################
+!
+subroutine STATISTIC(ux1,uy1,uz1,phi1,ta1,umean,vmean,wmean,phimean,uumean,vvmean,wwmean,&
+     uvmean,uwmean,vwmean,phiphimean,tmean)
+!
+!############################################################################
+
+USE param
+USE variables
+USE decomp_2d
+USE decomp_2d_io
+
+implicit none
+
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1,phi1
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: umean,vmean,wmean,uumean,vvmean,wwmean,uvmean,uwmean,vwmean,tmean
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: phimean, phiphimean
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ta1
+
+!umean=ux1
+call fine_to_coarseS(1,ux1,tmean)
+umean(:,:,:)=umean(:,:,:)+tmean(:,:,:)
+
+!vmean=uy1
+call fine_to_coarseS(1,uy1,tmean)
+vmean(:,:,:)=vmean(:,:,:)+tmean(:,:,:)
+
+!wmean=uz1
+call fine_to_coarseS(1,uz1,tmean)
+wmean(:,:,:)=wmean(:,:,:)+tmean(:,:,:)
+
+if (iscalar==1) then
+   !phimean=phi1
+   call fine_to_coarseS(1,phi1,tmean)
+   phimean(:,:,:)=phimean(:,:,:)+tmean(:,:,:)
+endif
+
+!uumean=ux1*ux1
+ta1(:,:,:)=ux1(:,:,:)*ux1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+uumean(:,:,:)=uumean(:,:,:)+tmean(:,:,:)
+
+!vvmean=uy1*uy1
+ta1(:,:,:)=uy1(:,:,:)*uy1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+vvmean(:,:,:)=vvmean(:,:,:)+tmean(:,:,:)
+
+!wwmean=uz1*uz1
+ta1(:,:,:)=uz1(:,:,:)*uz1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+wwmean(:,:,:)=wwmean(:,:,:)+tmean(:,:,:)
+
+!uvmean=ux1*uy1
+ta1(:,:,:)=ux1(:,:,:)*uy1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+uvmean(:,:,:)=uvmean(:,:,:)+tmean(:,:,:)
+
+!uwmean=ux1*uz1
+ta1(:,:,:)=ux1(:,:,:)*uz1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+uwmean(:,:,:)=uwmean(:,:,:)+tmean(:,:,:)
+
+!vwmean=uy1*uz1
+ta1(:,:,:)=uy1(:,:,:)*uz1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+vwmean(:,:,:)=vwmean(:,:,:)+tmean(:,:,:)
+
+if (iscalar==1) then
+   !phiphimean=phi1*phi1
+   ta1(:,:,:)=phi1(:,:,:)*phi1(:,:,:)
+   call fine_to_coarseS(1,ta1,tmean)
+   phiphimean(:,:,:)=phiphimean(:,:,:)+tmean(:,:,:)
+endif
+
+!for a verification
+!call decomp_2d_write_one(nx_global,ny_global,nz_global,&
+!           1,ta1,'compa.dat')
+
+if (mod(itime,isave)==0) then
+
+   call decomp_2d_write_one(1,umean,'umean3.dat',1)
+   call decomp_2d_write_one(1,vmean,'vmean3.dat',1)
+   call decomp_2d_write_one(1,wmean,'wmean3.dat',1)
+   call decomp_2d_write_one(1,uumean,'uumean3.dat',1)
+   call decomp_2d_write_one(1,vvmean,'vvmean3.dat',1)
+   call decomp_2d_write_one(1,wwmean,'wwmean3.dat',1)
+   call decomp_2d_write_one(1,uvmean,'uvmean3.dat',1)
+   call decomp_2d_write_one(1,uwmean,'uwmean3.dat',1)
+   call decomp_2d_write_one(1,vwmean,'vwmean3.dat',1)
+   if (nrank==0) print *,'write stat arrays velocity done!'
+   if (iscalar==1) then
+      call decomp_2d_write_one(1,phimean,'phimean3.dat',1)
+      call decomp_2d_write_one(1,phiphimean,'phiphimean3.dat',1)
+      if (nrank==0) print *,'write stat arrays scalar done!'
+   endif
+!   call decomp_2d_write_one(nx_global,ny_global,nz_global,1,ux1,'compa.dat')
+
+endif
+
+end subroutine STATISTIC
+
+!############################################################################
+!
+subroutine STAT_PRE (pp3,ta1,tb1,di1,ta2,tb2,di2,&
+     ta3,di3,nxmsize,nymsize,nzmsize,phG,ph2,ph3,pmean,tmean)
+!
+!############################################################################
+
+USE param
+USE variables
+USE decomp_2d
+USE decomp_2d_io
+
+implicit none
+
+TYPE(DECOMP_INFO) :: phG,ph2,ph3
+
+real(mytype),dimension(ph3%zst(1):ph3%zen(1),ph3%zst(2):ph3%zen(2),nzmsize) :: pp3 
+!Z PENCILS NXM NYM NZM-->NXM NYM NZ
+real(mytype),dimension(ph3%zst(1):ph3%zen(1),ph3%zst(2):ph3%zen(2),zsize(3)) :: ta3,di3
+!Y PENCILS NXM NYM NZ -->NXM NY NZ
+real(mytype),dimension(ph3%yst(1):ph3%yen(1),nymsize,ysize(3)) :: ta2
+real(mytype),dimension(ph3%yst(1):ph3%yen(1),ysize(2),ysize(3)) :: tb2,di2
+!X PENCILS NXM NY NZ  -->NX NY NZ
+real(mytype),dimension(nxmsize,xsize(2),xsize(3)) :: ta1
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: tb1,di1 
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: pmean,tmean
+
+integer :: code,icomplet,nxmsize,nymsize,nzmsize
+integer :: ijk,nvect1,nvect2,nvect3,i,j,k
+character(len=20) nfichier,nfichier1
+character(len=20) :: filename
+
+!WORK Z-PENCILS
+call interiz6(ta3,pp3,di3,sz,cifip6z,cisip6z,ciwip6z,cifz6,cisz6,ciwz6,&
+     (ph3%zen(1)-ph3%zst(1)+1),(ph3%zen(2)-ph3%zst(2)+1),nzmsize,zsize(3),1)
+!WORK Y-PENCILS
+call transpose_z_to_y(ta3,ta2,ph3) !nxm nym nz
+call interiy6(tb2,ta2,di2,sy,cifip6y,cisip6y,ciwip6y,cify6,cisy6,ciwy6,&
+     (ph3%yen(1)-ph3%yst(1)+1),nymsize,ysize(2),ysize(3),1)
+!WORK X-PENCILS
+call transpose_y_to_x(tb2,ta1,ph2) !nxm ny nz
+call interi6(tb1,ta1,di1,sx,cifip6,cisip6,ciwip6,cifx6,cisx6,ciwx6,&
+     nxmsize,xsize(1),xsize(2),xsize(3),1)
+!The pressure field on the main mesh is in tb1
+!pmean
+call fine_to_coarseS(1,tb1,tmean)
+pmean(:,:,:)=pmean(:,:,:)+tmean(:,:,:)
+
+if (mod(itime,isave)==0) then
+   call decomp_2d_write_one(1,pmean,'pmean3.dat',1)
+   if (nrank==0) print *,'write stat arrays pressure done!'
+endif
+
+end subroutine STAT_PRE
+
+!############################################################################
+!
+subroutine STAT_EPS (ux1,uy1,uz1,&
+     dudxm,dudym,dudzm,&
+     dvdxm,dvdym,dvdzm,&
+     dwdxm,dwdym,dwdzm,&
+     dudx2m,dudy2m,dudz2m,&
+     dvdx2m,dvdy2m,dvdz2m,&
+     dwdx2m,dwdy2m,dwdz2m,&
+     dudydvdxm,dudzdwdxm,dvdzdwdym,tempgrad,&
+     tmean,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
+     ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
+     ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG)
+!
+!############################################################################
+
+USE param
+USE variables
+USE decomp_2d
+USE decomp_2d_io
+
+implicit none
+
+TYPE(DECOMP_INFO) :: phG
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,tempgrad
+real(mytype),dimension(ysize(1),ysize(2),ysize(3)) :: ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2
+real(mytype),dimension(zsize(1),zsize(2),zsize(3)) :: ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: dudxm,dudym,dudzm,tmean
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: dvdxm,dvdym,dvdzm
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: dwdxm,dwdym,dwdzm
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: dudx2m,dudy2m,dudz2m
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: dvdx2m,dvdy2m,dvdz2m
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: dwdx2m,dwdy2m,dwdz2m
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: dudydvdxm,dudzdwdxm,dvdzdwdym
+
+integer :: code,icomplet
+integer :: ijk,nvect1,nvect2,nvect3,i,j,k
+character(len=20) nfichier,nfichier1
+character(len=20) :: filename
+
+nvect1=xsize(1)*xsize(2)*xsize(3)
+!x-derivatives
+call derx (ta1,ux1,di1,sx,ffx,fsx,fwx,xsize(1),xsize(2),xsize(3),0)
+call derx (tb1,uy1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+call derx (tc1,uz1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+!y-derivatives
+call transpose_x_to_y(ux1,td2)
+call transpose_x_to_y(uy1,te2)
+call transpose_x_to_y(uz1,tf2)
+call dery (ta2,td2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+call dery (tb2,te2,di2,sy,ffy,fsy,fwy,ppy,ysize(1),ysize(2),ysize(3),0)
+call dery (tc2,tf2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+!!z-derivatives
+call transpose_y_to_z(td2,td3)
+call transpose_y_to_z(te2,te3)
+call transpose_y_to_z(tf2,tf3)
+call derz (ta3,td3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+call derz (tb3,te3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+call derz (tc3,tf3,di3,sz,ffz,fsz,fwz,zsize(1),zsize(2),zsize(3),0)
+!!all back to x-pencils
+call transpose_z_to_y(ta3,td2)
+call transpose_z_to_y(tb3,te2)
+call transpose_z_to_y(tc3,tf2)
+call transpose_y_to_x(td2,tg1)
+call transpose_y_to_x(te2,th1)
+call transpose_y_to_x(tf2,ti1)
+call transpose_y_to_x(ta2,td1)
+call transpose_y_to_x(tb2,te1)
+call transpose_y_to_x(tc2,tf1)
+!du/dx=ta1 du/dy=td1 and du/dz=tg1
+!dv/dx=tb1 dv/dy=te1 and dv/dz=th1
+!dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
+
+!!$!ENERGY DISSIPATION (FULL, THI and AXI HYPOTHESIS)
+!!$do k=1,xsize(3)
+!!$   do j=1,xsize(2)
+!!$      do i=1,xsize(1)
+!!$         epsfull(i,j,k)=xnu*( 2.*(ta1(i,j,k)*ta1(i,j,k)+te1(i,j,k)*te1(i,j,k)&
+!!$              +ti1(i,j,k)*ti1(i,j,k)) &
+!!$              +(td1(i,j,k)*td1(i,j,k)+tb1(i,j,k)*tb1(i,j,k)+tg1(i,j,k)*tg1(i,j,k)&
+!!$              +tc1(i,j,k)*tc1(i,j,k)+th1(i,j,k)*th1(i,j,k)+tf1(i,j,k)*tf1(i,j,k))&
+!!$              +2.*(td1(i,j,k)*tb1(i,j,k)+tg1(i,j,k)*tc1(i,j,k)+th1(i,j,k)*tf1(i,j,k)))
+!!$
+!!$         epsthi(i,j,k)=15.*xnu*ta1(i,j,k)*ta1(i,j,k)
+!!$         
+!!$         epsaxi(i,j,k)=xnu*(-ta1(i,j,k)*ta1(i,j,k)+2.*td1(i,j,k)*td1(i,j,k)&
+!!$              +2.*tb1(i,j,k)*tb1(i,j,k)+8.*te1(i,j,k)*te1(i,j,k))
+!!$         !xnu*((5./3.)*ta1(i,j,k)*ta1(i,j,k)+2.*tg1(i,j,k)*tg1(i,j,k)&
+!!$         !     +2.*tb1(i,j,k)*tb1(i,j,k)+(8./3.)*th1(i,j,k)*th1(i,j,k))
+!!$      enddo
+!!$   enddo
+!!$enddo
+!!$!epsmean=epsilon1 
+!!$call fine_to_coarseS(1,epsfull,tmean)
+!!$epsfullm(:,:,:)=epsfullm(:,:,:)+tmean(:,:,:)
+!!$
+!!$call fine_to_coarseS(1,epsthi,tmean)
+!!$epsthim(:,:,:)=epsthim(:,:,:)+tmean(:,:,:)
+!!$
+!!$call fine_to_coarseS(1,epsaxi,tmean)
+!!$epsaxim(:,:,:)=epsaxim(:,:,:)+tmean(:,:,:)
+!!$
+!!$call fine_to_coarseS(1,ta1,tmean)
+!!$dudxm(:,:,:)=dudxm(:,:,:)+tmean(:,:,:)
+!
+!!$if (mod(itime,isave)==0) then
+!!$   call decomp_2d_write_one(1,epsfullm,'epsmean_full1.dat',1)
+!!$   call decomp_2d_write_one(1,epsthim,'epsmean_thi1.dat',1)
+!!$   call decomp_2d_write_one(1,epsaxim,'epsmean_axi1.dat',1)
+!!$   call decomp_2d_write_one(1,dudxm,'dudxm1.dat',1)
+!!$   if (nrank==0) print *,'write stat array epsilon done!'  
+!!$endif
+
+!du/dx=ta1 du/dy=td1 and du/dz=tg1
+!dv/dx=tb1 dv/dy=te1 and dv/dz=th1
+!dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
+! 9 MEAN GRADIENTS
+!dudx mean
+call fine_to_coarseS(1,ta1,tmean)
+dudxm(:,:,:)=dudxm(:,:,:)+tmean(:,:,:)
+!dudy mean
+call fine_to_coarseS(1,td1,tmean)
+dudym(:,:,:)=dudym(:,:,:)+tmean(:,:,:)
+!dudz mean
+call fine_to_coarseS(1,tg1,tmean)
+dudzm(:,:,:)=dudzm(:,:,:)+tmean(:,:,:)
+
+!dvdx mean
+call fine_to_coarseS(1,tb1,tmean)
+dvdxm(:,:,:)=dvdxm(:,:,:)+tmean(:,:,:)
+!dvdy mean
+call fine_to_coarseS(1,te1,tmean)
+dvdym(:,:,:)=dvdym(:,:,:)+tmean(:,:,:)
+!dvdz mean
+call fine_to_coarseS(1,th1,tmean)
+dvdzm(:,:,:)=dvdzm(:,:,:)+tmean(:,:,:)
+
+!dwdx mean
+call fine_to_coarseS(1,tc1,tmean)
+dwdxm(:,:,:)=dwdxm(:,:,:)+tmean(:,:,:)
+!dwdy mean
+call fine_to_coarseS(1,tf1,tmean)
+dwdym(:,:,:)=dwdym(:,:,:)+tmean(:,:,:)
+!dwdz mean
+call fine_to_coarseS(1,ti1,tmean)
+dwdzm(:,:,:)=dwdzm(:,:,:)+tmean(:,:,:)
+
+!du/dx=ta1 du/dy=td1 and du/dz=tg1
+!dv/dx=tb1 dv/dy=te1 and dv/dz=th1
+!dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
+! 9 MEAN SQUARE GRADIENTS
+!dudx2 mean
+tempgrad(:,:,:)=ta1(:,:,:)*ta1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dudx2m(:,:,:)=dudx2m(:,:,:)+tmean(:,:,:)
+!dudy2 mean
+tempgrad(:,:,:)=td1(:,:,:)*td1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dudy2m(:,:,:)=dudy2m(:,:,:)+tmean(:,:,:)
+!dudz2 mean
+tempgrad(:,:,:)=tg1(:,:,:)*tg1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dudz2m(:,:,:)=dudz2m(:,:,:)+tmean(:,:,:)
+
+!dvdx2 mean
+tempgrad(:,:,:)=tb1(:,:,:)*tb1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dvdx2m(:,:,:)=dvdx2m(:,:,:)+tmean(:,:,:)
+!dvdy2 mean
+tempgrad(:,:,:)=te1(:,:,:)*te1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dvdy2m(:,:,:)=dvdy2m(:,:,:)+tmean(:,:,:)
+!dvdz2 mean
+tempgrad(:,:,:)=th1(:,:,:)*th1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dvdz2m(:,:,:)=dvdz2m(:,:,:)+tmean(:,:,:)
+
+!dwdx2 mean
+tempgrad(:,:,:)=tc1(:,:,:)*tc1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dwdx2m(:,:,:)=dwdx2m(:,:,:)+tmean(:,:,:)
+!dwdy2 mean
+tempgrad(:,:,:)=tf1(:,:,:)*tf1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dwdy2m(:,:,:)=dwdy2m(:,:,:)+tmean(:,:,:)
+!dwdz2 mean
+tempgrad(:,:,:)=ti1(:,:,:)*ti1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dwdz2m(:,:,:)=dwdz2m(:,:,:)+tmean(:,:,:)
+
+!du/dx=ta1 du/dy=td1 and du/dz=tg1
+!dv/dx=tb1 dv/dy=te1 and dv/dz=th1
+!dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
+! 3 MEAN CROSS PRODUCTS GRADIENTS
+!dudydvdx mean
+tempgrad(:,:,:)=td1(:,:,:)*tb1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dudydvdxm(:,:,:)=dudydvdxm(:,:,:)+tmean(:,:,:)
+!dudzdwdx mean
+tempgrad(:,:,:)=tg1(:,:,:)*tc1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dudzdwdxm(:,:,:)=dudzdwdxm(:,:,:)+tmean(:,:,:)
+!dvdzdwdy mean
+tempgrad(:,:,:)=th1(:,:,:)*tf1(:,:,:)
+call fine_to_coarseS(1,tempgrad,tmean)
+dvdzdwdym(:,:,:)=dvdzdwdym(:,:,:)+tmean(:,:,:)
+
+!WRITE FILES
+if (mod(itime,isave)==0) then
+   !Mean gradients
+   call decomp_2d_write_one(1,dudxm,'dudxm3.dat',1)
+   call decomp_2d_write_one(1,dudym,'dudym3.dat',1)
+   call decomp_2d_write_one(1,dudzm,'dudzm3.dat',1)
+
+   call decomp_2d_write_one(1,dvdxm,'dvdxm3.dat',1)
+   call decomp_2d_write_one(1,dvdym,'dvdym3.dat',1)
+   call decomp_2d_write_one(1,dvdzm,'dvdzm3.dat',1)
+
+   call decomp_2d_write_one(1,dwdxm,'dwdxm3.dat',1)
+   call decomp_2d_write_one(1,dwdym,'dwdym3.dat',1)
+   call decomp_2d_write_one(1,dwdzm,'dwdzm3.dat',1)
+
+   !Mean square gradients
+   call decomp_2d_write_one(1,dudx2m,'dudx2m3.dat',1)
+   call decomp_2d_write_one(1,dudy2m,'dudy2m3.dat',1)
+   call decomp_2d_write_one(1,dudz2m,'dudz2m3.dat',1)
+
+   call decomp_2d_write_one(1,dvdx2m,'dvdx2m3.dat',1)
+   call decomp_2d_write_one(1,dvdy2m,'dvdy2m3.dat',1)
+   call decomp_2d_write_one(1,dvdz2m,'dvdz2m3.dat',1)
+
+   call decomp_2d_write_one(1,dwdx2m,'dwdx2m3.dat',1)
+   call decomp_2d_write_one(1,dwdy2m,'dwdy2m3.dat',1)
+   call decomp_2d_write_one(1,dwdz2m,'dwdz2m3.dat',1)
+
+   !Mean cross products
+   call decomp_2d_write_one(1,dudydvdxm,'dudydvdxm3.dat',1)
+   call decomp_2d_write_one(1,dudzdwdxm,'dudzdwdxm3.dat',1)
+   call decomp_2d_write_one(1,dvdzdwdym,'dvdzdwdym3.dat',1)
+
+   if (nrank==0) print *,'write stat array gradient done!'  
+endif
+
+end subroutine STAT_EPS
+
 !############################################################################
 !
 subroutine EXTRA_STAT (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
@@ -1074,6 +1477,306 @@ call interi6(tb1,ta1,di1,sx,cifip6,cisip6,ciwip6,cifx6,cisx6,ciwx6,&
 !     endif
 
 end subroutine VISU_STG
+
+
+!############################################################################
+!
+subroutine STAT_EPS_SLICE (ux1,uy1,uz1,epsfull,epsthi,epsaxi,epsfullm,epsthim,epsaxim,tmean,&
+     ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
+     ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
+     ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG)
+!
+!
+!############################################################################
+
+USE param
+USE variables
+USE decomp_2d
+USE decomp_2d_io
+
+implicit none
+
+TYPE(DECOMP_INFO) :: phG
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: epsfull,epsthi,epsaxi
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
+real(mytype),dimension(ysize(1),ysize(2),ysize(3)) :: ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2
+real(mytype),dimension(zsize(1),zsize(2),zsize(3)) :: ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: epsfullm,epsthim,epsaxim,tmean
+
+integer :: code,icomplet,ivis
+integer :: ijk,nvect1,nvect2,nvect3,i,j,k
+character(len=20) nfichier,nfichier1
+character(len=20) :: filename
+real(mytype) :: xvis,xp
+
+!x-derivatives
+call derx (ta1,ux1,di1,sx,ffx,fsx,fwx,xsize(1),xsize(2),xsize(3),0)
+call derx (tb1,uy1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+call derx (tc1,uz1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+!y-derivatives
+call transpose_x_to_y(ux1,td2)
+call transpose_x_to_y(uy1,te2)
+call transpose_x_to_y(uz1,tf2)
+call dery (ta2,td2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+call dery (tb2,te2,di2,sy,ffy,fsy,fwy,ppy,ysize(1),ysize(2),ysize(3),0)
+call dery (tc2,tf2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+!!z-derivatives
+call transpose_y_to_z(td2,td3)
+call transpose_y_to_z(te2,te3)
+call transpose_y_to_z(tf2,tf3)
+call derz (ta3,td3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+call derz (tb3,te3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+call derz (tc3,tf3,di3,sz,ffz,fsz,fwz,zsize(1),zsize(2),zsize(3),0)
+!!all back to x-pencils
+call transpose_z_to_y(ta3,td2)
+call transpose_z_to_y(tb3,te2)
+call transpose_z_to_y(tc3,tf2)
+call transpose_y_to_x(td2,tg1)
+call transpose_y_to_x(te2,th1)
+call transpose_y_to_x(tf2,ti1)
+call transpose_y_to_x(ta2,td1)
+call transpose_y_to_x(tb2,te1)
+call transpose_y_to_x(tc2,tf1)
+!du/dx=ta1 du/dy=td1 and du/dz=tg1
+!dv/dx=tb1 dv/dy=te1 and dv/dz=th1
+!dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
+
+
+!ENERGY DISSIPATION (FULL, THI and AXI HYPOTHESIS)
+do k=1,xsize(3)
+   do j=1,xsize(2)
+      do i=1,xsize(1)
+         epsfull(i,j,k)= xnu*( 2.*(ta1(i,j,k)*ta1(i,j,k)+te1(i,j,k)*te1(i,j,k)&
+              +ti1(i,j,k)*ti1(i,j,k)) &
+              +td1(i,j,k)*td1(i,j,k)+tb1(i,j,k)*tb1(i,j,k)+tg1(i,j,k)*tg1(i,j,k)&
+              +tc1(i,j,k)*tc1(i,j,k)+th1(i,j,k)*th1(i,j,k)+tf1(i,j,k)*tf1(i,j,k)&
+              +2.*(td1(i,j,k)*tb1(i,j,k)+tg1(i,j,k)*tc1(i,j,k)+th1(i,j,k)*tf1(i,j,k)))
+
+         epsthi(i,j,k)=15.*xnu*ta1(i,j,k)*ta1(i,j,k)
+         
+         epsaxi(i,j,k)= xnu*(-ta1(i,j,k)*ta1(i,j,k)+2.*td1(i,j,k)*td1(i,j,k)&
+              +2.*tb1(i,j,k)*tb1(i,j,k)+8.*te1(i,j,k)*te1(i,j,k))
+         !xnu*((5./3.)*ta1(i,j,k)*ta1(i,j,k)+2.*tg1(i,j,k)*tg1(i,j,k)&
+         !     +2.*tb1(i,j,k)*tb1(i,j,k)+(8./3.)*th1(i,j,k)*th1(i,j,k))
+      enddo
+   enddo
+enddo
+
+
+call fine_to_coarseS(1,epsfull,tmean)
+epsfullm(:,:,:)=epsfullm(:,:,:)+tmean(:,:,:)
+
+call fine_to_coarseS(1,epsthi,tmean)
+epsthim(:,:,:)=epsthim(:,:,:)+tmean(:,:,:)
+
+call fine_to_coarseS(1,epsaxi,tmean)
+epsaxim(:,:,:)=epsaxim(:,:,:)+tmean(:,:,:)
+
+!
+if (mod(itime,isave)==0) then
+  
+909 format('epsfullm_X',I2.2)
+910 format('epsthim_X',I2.2)
+911 format('epsaxim_X',I2.2)
+
+   xp=10.
+   !!X/l=5,10,15,...,45 = 9 PLANES (xp=reference)
+   xvis=5.
+   do i=1,3
+      ivis=int((xvis+xp)/dx)+1
+
+      write(filename, 909) int(xvis)
+      call decomp_2d_write_plane(1,epsfullm,1,ivis,filename)
+      
+      write(filename, 910) int(xvis)
+      call decomp_2d_write_plane(1,epsthim,1,ivis,filename)
+      
+      write(filename, 911) int(xvis)
+      call decomp_2d_write_plane(1,epsaxim,1,ivis,filename)
+      
+      xvis=xvis+5.
+   enddo
+   if (nrank==0) print *,'X/l=5,10,15,... planes: write Epsilon done!'
+   !!
+
+   !!Z=0 (zlz/2) PLANE
+   call decomp_2d_write_plane(1,epsfullm,3,nz/2,'epsfullm_Z0')
+   call decomp_2d_write_plane(1,epsthim,3,nz/2,'epsthim_Z0')
+   call decomp_2d_write_plane(1,epsaxim,3,nz/2,'epsaxim_Z0')
+   if (nrank==0) print *,'z/l=0 plane: write Epsilon done!'
+   !!
+   !!Y=0 (yly/2) PLANE
+   call decomp_2d_write_plane(1,epsfullm,2,ny/2,'epsfullm_Y0')
+   call decomp_2d_write_plane(1,epsthim,2,ny/2,'epsthim_Y0')
+   call decomp_2d_write_plane(1,epsaxim,2,ny/2,'epsaxim_Y0')
+   if (nrank==0) print *,'y/l=0 plane: write Epsilon done!'
+   !!
+
+   
+endif
+
+end subroutine STAT_EPS_SLICE
+
+
+!############################################################################
+!
+subroutine STATISTIC_SLICE(ux1,uy1,uz1,phi1,ta1,umean,vmean,wmean,phimean,uumean,vvmean,wwmean,&
+     uvmean,uwmean,vwmean,phiphimean,tmean)
+!
+!############################################################################
+
+USE param
+USE variables
+USE decomp_2d
+USE decomp_2d_io
+
+implicit none
+
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1,phi1
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: umean,vmean,wmean,uumean,vvmean,wwmean,uvmean,uwmean,vwmean,tmean
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: phimean, phiphimean
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ta1
+real(mytype) :: xp,xvis
+integer :: ivis,i
+character(len=20) :: filename
+
+!umean=ux1
+call fine_to_coarseS(1,ux1,tmean)
+umean(:,:,:)=umean(:,:,:)+tmean(:,:,:)
+
+!vmean=uy1
+call fine_to_coarseS(1,uy1,tmean)
+vmean(:,:,:)=vmean(:,:,:)+tmean(:,:,:)
+
+!wmean=uz1
+call fine_to_coarseS(1,uz1,tmean)
+wmean(:,:,:)=wmean(:,:,:)+tmean(:,:,:)
+
+if (iscalar==1) then
+   !phimean=phi1
+   call fine_to_coarseS(1,phi1,tmean)
+   phimean(:,:,:)=phimean(:,:,:)+tmean(:,:,:)
+endif
+
+!uumean=ux1*ux1
+ta1(:,:,:)=ux1(:,:,:)*ux1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+uumean(:,:,:)=uumean(:,:,:)+tmean(:,:,:)
+
+!vvmean=uy1*uy1
+ta1(:,:,:)=uy1(:,:,:)*uy1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+vvmean(:,:,:)=vvmean(:,:,:)+tmean(:,:,:)
+
+!wwmean=uz1*uz1
+ta1(:,:,:)=uz1(:,:,:)*uz1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+wwmean(:,:,:)=wwmean(:,:,:)+tmean(:,:,:)
+
+!uvmean=ux1*uy1
+ta1(:,:,:)=ux1(:,:,:)*uy1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+uvmean(:,:,:)=uvmean(:,:,:)+tmean(:,:,:)
+
+!uwmean=ux1*uz1
+ta1(:,:,:)=ux1(:,:,:)*uz1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+uwmean(:,:,:)=uwmean(:,:,:)+tmean(:,:,:)
+
+!vwmean=uy1*uz1
+ta1(:,:,:)=uy1(:,:,:)*uz1(:,:,:)
+call fine_to_coarseS(1,ta1,tmean)
+vwmean(:,:,:)=vwmean(:,:,:)+tmean(:,:,:)
+
+if (iscalar==1) then
+   !phiphimean=phi1*phi1
+   ta1(:,:,:)=phi1(:,:,:)*phi1(:,:,:)
+   call fine_to_coarseS(1,ta1,tmean)
+   phiphimean(:,:,:)=phiphimean(:,:,:)+tmean(:,:,:)
+endif
+
+if (mod(itime,isave)==0) then
+
+900 format('umean_X',I2.2)
+901 format('vmean_X',I2.2)
+902 format('wmean_X',I2.2)
+   
+903 format('uumean_X',I2.2)
+904 format('vvmean_X',I2.2)
+905 format('wwmean_X',I2.2)
+   
+906 format('uvmean_X',I2.2)
+907 format('uwmean_X',I2.2)
+908 format('vwmean_X',I2.2)
+   
+   xp=10.
+   !!X/l=5,10,15,...,45 = 9 PLANES (xp=reference)
+   xvis=5.
+   do i=1,3
+      ivis=int((xvis+xp)/dx)+1
+
+      write(filename, 900) int(xvis)
+      call decomp_2d_write_plane(1,umean,1,ivis,filename)
+
+      write(filename, 901) int(xvis)
+      call decomp_2d_write_plane(1,vmean,1,ivis,filename)
+
+      write(filename, 902) int(xvis)
+      call decomp_2d_write_plane(1,wmean,1,ivis,filename)
+
+      write(filename, 903) int(xvis)
+      call decomp_2d_write_plane(1,uumean,1,ivis,filename)
+
+      write(filename, 904) int(xvis)
+      call decomp_2d_write_plane(1,vvmean,1,ivis,filename)
+
+      write(filename, 905) int(xvis)
+      call decomp_2d_write_plane(1,wwmean,1,ivis,filename)
+
+      write(filename, 906) int(xvis)
+      call decomp_2d_write_plane(1,uvmean,1,ivis,filename)
+
+      write(filename, 907) int(xvis)
+      call decomp_2d_write_plane(1,uwmean,1,ivis,filename)
+
+      write(filename, 908) int(xvis)
+      call decomp_2d_write_plane(1,vwmean,1,ivis,filename)
+
+      xvis=xvis+5.
+   enddo
+   if (nrank==0) print *,'x/l=5,10,15,... planes: write stat arrays done!'
+   !!
+
+   !!Z=0 (zlz/2) PLANE
+   call decomp_2d_write_plane(1,umean,3,nz/2,'umean_Z0')
+   call decomp_2d_write_plane(1,vmean,3,nz/2,'vmean_Z0')
+   call decomp_2d_write_plane(1,wmean,3,nz/2,'wmean_Z0')
+   call decomp_2d_write_plane(1,uumean,3,nz/2,'uumean_Z0')
+   call decomp_2d_write_plane(1,vvmean,3,nz/2,'vvmean_Z0')
+   call decomp_2d_write_plane(1,wwmean,3,nz/2,'wwmean_Z0')
+   call decomp_2d_write_plane(1,uvmean,3,nz/2,'uvmean_Z0')
+   call decomp_2d_write_plane(1,uwmean,3,nz/2,'uwmean_Z0')
+   call decomp_2d_write_plane(1,vwmean,3,nz/2,'vwmean_Z0')
+   if (nrank==0) print *,'z/l=0 plane: write stat arrays done!'
+   !!
+
+   !!Y=0 (ylz/2) PLANE
+   call decomp_2d_write_plane(1,umean,2,ny/2,'umean_Y0')
+   call decomp_2d_write_plane(1,vmean,2,ny/2,'vmean_Y0')
+   call decomp_2d_write_plane(1,wmean,2,ny/2,'wmean_Y0')
+   call decomp_2d_write_plane(1,uumean,2,ny/2,'uumean_Y0')
+   call decomp_2d_write_plane(1,vvmean,2,ny/2,'vvmean_Y0')
+   call decomp_2d_write_plane(1,wwmean,2,ny/2,'wwmean_Y0')
+   call decomp_2d_write_plane(1,uvmean,2,ny/2,'uvmean_Y0')
+   call decomp_2d_write_plane(1,uwmean,2,ny/2,'uwmean_Y0')
+   call decomp_2d_write_plane(1,vwmean,2,ny/2,'vwmean_Y0')
+   if (nrank==0) print *,'y/l=0 plane: write stat arrays done!'
+   !!
+  
+endif
+
+end subroutine STATISTIC_SLICE
 
 
 !############################################################################
