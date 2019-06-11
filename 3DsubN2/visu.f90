@@ -130,23 +130,23 @@ endif
 
 !!$!############################################################################
 !!$!VELOCITY
-uvisu=0.
-call fine_to_coarseV(1,ux1,uvisu)
-993 format('ux',I4.4)
-      write(filename, 993) itime/imodulo
-  call decomp_2d_write_one(1,uvisu,filename,2)
-
-uvisu=0.
-call fine_to_coarseV(1,uy1,uvisu)
-994 format('uy',I4.4)
-      write(filename, 994) itime/imodulo
-call decomp_2d_write_one(1,uvisu,filename,2)
-
-uvisu=0.
-call fine_to_coarseV(1,uz1,uvisu)
-995 format('uz',I4.4)
-      write(filename, 995) itime/imodulo
-call decomp_2d_write_one(1,uvisu,filename,2)
+!!$uvisu=0.
+!!$call fine_to_coarseV(1,ux1,uvisu)
+!!$993 format('ux',I4.4)
+!!$      write(filename, 993) itime/imodulo
+!!$call decomp_2d_write_one(1,uvisu,filename,2)
+!!$
+!!$uvisu=0.
+!!$call fine_to_coarseV(1,uy1,uvisu)
+!!$994 format('uy',I4.4)
+!!$      write(filename, 994) itime/imodulo
+!!$call decomp_2d_write_one(1,uvisu,filename,2)
+!!$
+!!$uvisu=0.
+!!$call fine_to_coarseV(1,uz1,uvisu)
+!!$995 format('uz',I4.4)
+!!$      write(filename, 995) itime/imodulo
+!!$call decomp_2d_write_one(1,uvisu,filename,2)
 
 !############################################################################
 
@@ -373,6 +373,7 @@ endif
 !IT IS IN A SEPARATE SUBROUTINE
 !############################################################################
 end subroutine VISU_INSTA
+
 
 !############################################################################
 !
@@ -761,7 +762,7 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
   !COMPUTE VORTICITY MAGNITUDE IN di1
 !   di1=0.; Oa1=0.;Ob1=0.;Oc1=0.;
 
-!  do k=1,xsize(3)
+!   do k=1,xsize(3)
 !   do j=1,xsize(2)
 !   do i=1,xsize(1)
 !     Oa1(i,j,k) = (tf1(i,j,k)-th1(i,j,k))
@@ -772,7 +773,7 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
 
 !   do k=1,xsize(3)
 !   do j=1,xsize(2)
-!  do i=1,xsize(1)
+!   do i=1,xsize(1)
 !     di1(i,j,k) = ux1(i,j,k)*Oa1(i,j,k) + uy1(i,j,k)*Ob1(i,j,k) + &
 !                 uz1(i,j,k)*Oc1(i,j,k)
 !   enddo; enddo
@@ -855,6 +856,74 @@ end subroutine VISU_SLICE
 
 !############################################################################
 !
+subroutine PRE_SLICE (pp3,ta1,tb1,di1,ta2,tb2,di2,&
+     ta3,di3,nxmsize,nymsize,nzmsize,phG,ph2,ph3,uvisu)
+!
+!############################################################################
+
+USE param
+USE variables
+USE decomp_2d
+USE decomp_2d_io
+
+implicit none
+
+TYPE(DECOMP_INFO) :: phG,ph2,ph3
+real(mytype),dimension(xszV(1),xszV(2),xszV(3)) :: uvisu 
+
+real(mytype),dimension(ph3%zst(1):ph3%zen(1),ph3%zst(2):ph3%zen(2),nzmsize) :: pp3 
+!Z PENCILS NXM NYM NZM-->NXM NYM NZ
+real(mytype),dimension(ph3%zst(1):ph3%zen(1),ph3%zst(2):ph3%zen(2),zsize(3)) :: ta3,di3
+!Y PENCILS NXM NYM NZ -->NXM NY NZ
+real(mytype),dimension(ph3%yst(1):ph3%yen(1),nymsize,ysize(3)) :: ta2
+real(mytype),dimension(ph3%yst(1):ph3%yen(1),ysize(2),ysize(3)) :: tb2,di2
+!X PENCILS NXM NY NZ  -->NX NY NZ
+real(mytype),dimension(nxmsize,xsize(2),xsize(3)) :: ta1
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: tb1,di1 
+
+integer :: code,icomplet,nxmsize,nymsize,nzmsize
+integer :: ijk,nvect1,nvect2,nvect3,i,j,k
+character(len=20) nfichier,nfichier1
+character(len=20) :: filename
+
+!WORK Z-PENCILS
+call interiz6(ta3,pp3,di3,sz,cifip6z,cisip6z,ciwip6z,cifz6,cisz6,ciwz6,&
+     (ph3%zen(1)-ph3%zst(1)+1),(ph3%zen(2)-ph3%zst(2)+1),nzmsize,zsize(3),1)
+!WORK Y-PENCILS
+call transpose_z_to_y(ta3,ta2,ph3) !nxm nym nz
+call interiy6(tb2,ta2,di2,sy,cifip6y,cisip6y,ciwip6y,cify6,cisy6,ciwy6,&
+     (ph3%yen(1)-ph3%yst(1)+1),nymsize,ysize(2),ysize(3),1)
+!WORK X-PENCILS
+call transpose_y_to_x(tb2,ta1,ph2) !nxm ny nz
+call interi6(tb1,ta1,di1,sx,cifip6,cisip6,ciwip6,cifx6,cisx6,ciwx6,&
+     nxmsize,xsize(1),xsize(2),xsize(3),1)
+!The pressure field on the main mesh is in tb1
+
+!!X=0 (xlx/2) PLANE 
+!PRESSURE
+990 format('pp_x0',I4.4)
+write(filename,990) itime/imodulo
+call decomp_2d_write_plane(1,tb1,1,(nx+1)/2,filename)
+
+!!Z=0
+991 format('pp_z0',I4.4)
+write(filename,991) itime/imodulo
+call decomp_2d_write_plane(1,tb1,3,(nz+1)/2,filename)
+
+!!Y=0
+992 format ('pp_y0',I4.4)
+write(filename,992) itime/imodulo
+call decomp_2d_write_plane(1,tb1,2,1,filename)
+
+
+
+end subroutine PRE_SLICE
+
+!#############################################################################
+
+
+
+
 subroutine VISU_SUBDOMAIN  (ux1,uy1,uz1,ppx,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
      ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
      ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG,uvisu)
@@ -948,71 +1017,7 @@ subroutine VISU_SUBDOMAIN  (ux1,uy1,uz1,ppx,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1
 end subroutine VISU_SUBDOMAIN
 
 !############################################################################
-!
-subroutine PRE_SLICE (pp3,ta1,tb1,di1,ta2,tb2,di2,&
-     ta3,di3,nxmsize,nymsize,nzmsize,phG,ph2,ph3,uvisu)
-!
-!############################################################################
-
-USE param
-USE variables
-USE decomp_2d
-USE decomp_2d_io
-
-implicit none
-
-TYPE(DECOMP_INFO) :: phG,ph2,ph3
-real(mytype),dimension(xszV(1),xszV(2),xszV(3)) :: uvisu 
-
-real(mytype),dimension(ph3%zst(1):ph3%zen(1),ph3%zst(2):ph3%zen(2),nzmsize) :: pp3 
-!Z PENCILS NXM NYM NZM-->NXM NYM NZ
-real(mytype),dimension(ph3%zst(1):ph3%zen(1),ph3%zst(2):ph3%zen(2),zsize(3)) :: ta3,di3
-!Y PENCILS NXM NYM NZ -->NXM NY NZ
-real(mytype),dimension(ph3%yst(1):ph3%yen(1),nymsize,ysize(3)) :: ta2
-real(mytype),dimension(ph3%yst(1):ph3%yen(1),ysize(2),ysize(3)) :: tb2,di2
-!X PENCILS NXM NY NZ  -->NX NY NZ
-real(mytype),dimension(nxmsize,xsize(2),xsize(3)) :: ta1
-real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: tb1,di1 
-
-integer :: code,icomplet,nxmsize,nymsize,nzmsize
-integer :: ijk,nvect1,nvect2,nvect3,i,j,k
-character(len=20) nfichier,nfichier1
-character(len=20) :: filename
-
-!WORK Z-PENCILS
-call interiz6(ta3,pp3,di3,sz,cifip6z,cisip6z,ciwip6z,cifz6,cisz6,ciwz6,&
-     (ph3%zen(1)-ph3%zst(1)+1),(ph3%zen(2)-ph3%zst(2)+1),nzmsize,zsize(3),1)
-!WORK Y-PENCILS
-call transpose_z_to_y(ta3,ta2,ph3) !nxm nym nz
-call interiy6(tb2,ta2,di2,sy,cifip6y,cisip6y,ciwip6y,cify6,cisy6,ciwy6,&
-     (ph3%yen(1)-ph3%yst(1)+1),nymsize,ysize(2),ysize(3),1)
-!WORK X-PENCILS
-call transpose_y_to_x(tb2,ta1,ph2) !nxm ny nz
-call interi6(tb1,ta1,di1,sx,cifip6,cisip6,ciwip6,cifx6,cisx6,ciwx6,&
-     nxmsize,xsize(1),xsize(2),xsize(3),1)
-!The pressure field on the main mesh is in tb1
-
-!!X=0 (xlx/2) PLANE 
-!PRESSURE
-990 format('pp_x0',I4.4)
-write(filename,990) itime/imodulo
-call decomp_2d_write_plane(1,tb1,1,(nx+1)/2,filename)
-
-!!Z=0
-991 format('pp_z0',I4.4)
-write(filename,991) itime/imodulo
-call decomp_2d_write_plane(1,tb1,3,(nz+1)/2,filename)
-
-!!Y=0
-992 format ('pp_y0',I4.4)
-write(filename,992) itime/imodulo
-call decomp_2d_write_plane(1,tb1,2,1,filename)
-
-
-
-end subroutine PRE_SLICE
-
-!############################################################################
+###########################################################################
 !
 subroutine VISU_STG (pp3,ppx,ta1,tb1,di1,ta2,tb2,di2,&
      ta3,di3,nxmsize,nymsize,nzmsize,phG,ph2,ph3,uvisu)
@@ -1071,4 +1076,141 @@ call interi6(tb1,ta1,di1,sx,cifip6,cisip6,ciwip6,cifx6,cisx6,ciwx6,&
 end subroutine VISU_STG
 
 
+!############################################################################
+!
+subroutine STAT_EPS_SLICE (ux1,uy1,uz1,epsfull,epsthi,epsaxi,epsfullm,epsthim,epsaxim,tmean,&
+     ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
+     ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
+     ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG)
+!
+!
+!############################################################################
 
+USE param
+USE variables
+USE decomp_2d
+USE decomp_2d_io
+
+implicit none
+
+TYPE(DECOMP_INFO) :: phG
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ux1,uy1,uz1
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: epsfull,epsthi,epsaxi
+real(mytype),dimension(xsize(1),xsize(2),xsize(3)) :: ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
+real(mytype),dimension(ysize(1),ysize(2),ysize(3)) :: ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2
+real(mytype),dimension(zsize(1),zsize(2),zsize(3)) :: ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3
+real(mytype),dimension(xszS(1),xszS(2),xszS(3)) :: epsfullm,epsthim,epsaxim,tmean
+
+integer :: code,icomplet,ivis
+integer :: ijk,nvect1,nvect2,nvect3,i,j,k
+character(len=20) nfichier,nfichier1
+character(len=20) :: filename
+real(mytype) :: xvis,xp
+
+!x-derivatives
+call derx (ta1,ux1,di1,sx,ffx,fsx,fwx,xsize(1),xsize(2),xsize(3),0)
+call derx (tb1,uy1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+call derx (tc1,uz1,di1,sx,ffxp,fsxp,fwxp,xsize(1),xsize(2),xsize(3),1)
+!y-derivatives
+call transpose_x_to_y(ux1,td2)
+call transpose_x_to_y(uy1,te2)
+call transpose_x_to_y(uz1,tf2)
+call dery (ta2,td2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+call dery (tb2,te2,di2,sy,ffy,fsy,fwy,ppy,ysize(1),ysize(2),ysize(3),0)
+call dery (tc2,tf2,di2,sy,ffyp,fsyp,fwyp,ppy,ysize(1),ysize(2),ysize(3),1)
+!!z-derivatives
+call transpose_y_to_z(td2,td3)
+call transpose_y_to_z(te2,te3)
+call transpose_y_to_z(tf2,tf3)
+call derz (ta3,td3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+call derz (tb3,te3,di3,sz,ffzp,fszp,fwzp,zsize(1),zsize(2),zsize(3),1)
+call derz (tc3,tf3,di3,sz,ffz,fsz,fwz,zsize(1),zsize(2),zsize(3),0)
+!!all back to x-pencils
+call transpose_z_to_y(ta3,td2)
+call transpose_z_to_y(tb3,te2)
+call transpose_z_to_y(tc3,tf2)
+call transpose_y_to_x(td2,tg1)
+call transpose_y_to_x(te2,th1)
+call transpose_y_to_x(tf2,ti1)
+call transpose_y_to_x(ta2,td1)
+call transpose_y_to_x(tb2,te1)
+call transpose_y_to_x(tc2,tf1)
+!du/dx=ta1 du/dy=td1 and du/dz=tg1
+!dv/dx=tb1 dv/dy=te1 and dv/dz=th1
+!dw/dx=tc1 dw/dy=tf1 and dw/dz=ti1
+
+
+!ENERGY DISSIPATION (FULL, THI and AXI HYPOTHESIS)
+do k=1,xsize(3)
+   do j=1,xsize(2)
+      do i=1,xsize(1)
+         epsfull(i,j,k)= xnu*( 2.*(ta1(i,j,k)*ta1(i,j,k)+te1(i,j,k)*te1(i,j,k)&
+              +ti1(i,j,k)*ti1(i,j,k)) &
+              +td1(i,j,k)*td1(i,j,k)+tb1(i,j,k)*tb1(i,j,k)+tg1(i,j,k)*tg1(i,j,k)&
+              +tc1(i,j,k)*tc1(i,j,k)+th1(i,j,k)*th1(i,j,k)+tf1(i,j,k)*tf1(i,j,k)&
+              +2.*(td1(i,j,k)*tb1(i,j,k)+tg1(i,j,k)*tc1(i,j,k)+th1(i,j,k)*tf1(i,j,k)))
+
+         epsthi(i,j,k)=15.*xnu*ta1(i,j,k)*ta1(i,j,k)
+         
+         epsaxi(i,j,k)= xnu*(-ta1(i,j,k)*ta1(i,j,k)+2.*td1(i,j,k)*td1(i,j,k)&
+              +2.*tb1(i,j,k)*tb1(i,j,k)+8.*te1(i,j,k)*te1(i,j,k))
+         !xnu*((5./3.)*ta1(i,j,k)*ta1(i,j,k)+2.*tg1(i,j,k)*tg1(i,j,k)&
+         !     +2.*tb1(i,j,k)*tb1(i,j,k)+(8./3.)*th1(i,j,k)*th1(i,j,k))
+      enddo
+   enddo
+enddo
+
+
+call fine_to_coarseS(1,epsfull,tmean)
+epsfullm(:,:,:)=epsfullm(:,:,:)+tmean(:,:,:)
+
+call fine_to_coarseS(1,epsthi,tmean)
+epsthim(:,:,:)=epsthim(:,:,:)+tmean(:,:,:)
+
+call fine_to_coarseS(1,epsaxi,tmean)
+epsaxim(:,:,:)=epsaxim(:,:,:)+tmean(:,:,:)
+
+!
+if (mod(itime,isave)==0) then
+  
+909 format('epsfullm_X',I2.2)
+910 format('epsthim_X',I2.2)
+911 format('epsaxim_X',I2.2)
+
+   xp=10.
+   !!X/l=5,10,15,...,45 = 9 PLANES (xp=reference)
+   xvis=5.
+   do i=1,3
+      ivis=int((xvis+xp)/dx)+1
+
+      write(filename, 909) int(xvis)
+      call decomp_2d_write_plane(1,epsfullm,1,ivis,filename)
+      
+      write(filename, 910) int(xvis)
+      call decomp_2d_write_plane(1,epsthim,1,ivis,filename)
+      
+      write(filename, 911) int(xvis)
+      call decomp_2d_write_plane(1,epsaxim,1,ivis,filename)
+      
+      xvis=xvis+5.
+   enddo
+   if (nrank==0) print *,'X/l=5,10,15,... planes: write Epsilon done!'
+   !!
+
+   !!Z=0 (zlz/2) PLANE
+   call decomp_2d_write_plane(1,epsfullm,3,nz/2,'epsfullm_Z0')
+   call decomp_2d_write_plane(1,epsthim,3,nz/2,'epsthim_Z0')
+   call decomp_2d_write_plane(1,epsaxim,3,nz/2,'epsaxim_Z0')
+   if (nrank==0) print *,'z/l=0 plane: write Epsilon done!'
+   !!
+   !!Y=0 (yly/2) PLANE
+   call decomp_2d_write_plane(1,epsfullm,2,ny/2,'epsfullm_Y0')
+   call decomp_2d_write_plane(1,epsthim,2,ny/2,'epsthim_Y0')
+   call decomp_2d_write_plane(1,epsaxim,2,ny/2,'epsaxim_Y0')
+   if (nrank==0) print *,'y/l=0 plane: write Epsilon done!'
+   !!
+
+   
+endif
+
+end subroutine STAT_EPS_SLICE

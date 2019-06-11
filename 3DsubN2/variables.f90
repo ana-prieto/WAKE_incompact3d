@@ -18,17 +18,17 @@ real(mytype), save, allocatable, dimension(:,:,:) :: ep1
 !arrays for statistic collection
 real(mytype), save, allocatable, dimension(:,:,:) :: umean,vmean,wmean,uumean,vvmean,wwmean,uvmean,uwmean,vwmean,tmean
 real(mytype), save, allocatable, dimension(:,:,:) :: phimean, phiphimean,pmean
-!real(mytype), save, allocatable, dimension(:,:,:) :: epsfullm,epsthim,epsaxim
+real(mytype), save, allocatable, dimension(:,:,:) :: epsfullm,epsthim,epsaxim
 
-!real(mytype), save, allocatable, dimension(:,:,:) :: dudxm,dudym,dudzm
-!real(mytype), save, allocatable, dimension(:,:,:) :: dvdxm,dvdym,dvdzm
-!real(mytype), save, allocatable, dimension(:,:,:) :: dwdxm,dwdym,dwdzm
+real(mytype), save, allocatable, dimension(:,:,:) :: dudxm,dudym,dudzm
+real(mytype), save, allocatable, dimension(:,:,:) :: dvdxm,dvdym,dvdzm
+real(mytype), save, allocatable, dimension(:,:,:) :: dwdxm,dwdym,dwdzm
 
-!real(mytype), save, allocatable, dimension(:,:,:) :: dudx2m,dudy2m,dudz2m
-!real(mytype), save, allocatable, dimension(:,:,:) :: dvdx2m,dvdy2m,dvdz2m
-!real(mytype), save, allocatable, dimension(:,:,:) :: dwdx2m,dwdy2m,dwdz2m
+real(mytype), save, allocatable, dimension(:,:,:) :: dudx2m,dudy2m,dudz2m
+real(mytype), save, allocatable, dimension(:,:,:) :: dvdx2m,dvdy2m,dvdz2m
+real(mytype), save, allocatable, dimension(:,:,:) :: dwdx2m,dwdy2m,dwdz2m
 
-!real(mytype), save, allocatable, dimension(:,:,:) :: dudydvdxm,dudzdwdxm,dvdzdwdym
+real(mytype), save, allocatable, dimension(:,:,:) :: dudydvdxm,dudzdwdxm,dvdzdwdym
 
 !arrays for visualization
 real(mytype), save, allocatable, dimension(:,:,:) :: uvisu
@@ -116,17 +116,17 @@ contains
     allocate(dpdyz1(xsize(1),xsize(2)),dpdyzn(xsize(1),xsize(2)))
 
     !arrays for statistic collection!pay attention to the size!
-    !allocate (umean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (vmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (wmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (uumean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (vvmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (wwmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (uvmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (uwmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (vwmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
-    !allocate (tmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))    
-    !allocate (pmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (umean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (vmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (wmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (uumean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (vvmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (wwmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (uvmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (uwmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (vwmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (tmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))    
+    allocate (pmean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
     if (iscalar==1) then
        allocate (phimean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
        allocate (phiphimean(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
@@ -134,37 +134,37 @@ contains
        allocate (phimean(1,1,1))
        allocate (phiphimean(1,1,1))
     endif
-!!$    allocate (epsfullm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-!!$    allocate (epsthim(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-!!$    allocate (epsaxim(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (epsfullm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (epsthim(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (epsaxim(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
 
-    !allocate (dudxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dudym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dudzm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dudxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dudym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dudzm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
 
-    !allocate (dvdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dvdym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dvdzm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dvdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dvdym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dvdzm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
 
-    !allocate (dwdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dwdym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dwdzm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dwdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dwdym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dwdzm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
 
-    !allocate (dudx2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dudy2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dudz2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dudx2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dudy2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dudz2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
 
-    !allocate (dvdx2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dvdy2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dvdz2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dvdx2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dvdy2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dvdz2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
 
-    !allocate (dwdx2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dwdy2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dwdz2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (dwdx2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dwdy2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dwdz2m(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
 
-    !allocate (dudydvdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dudzdwdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
-    !allocate (dvdzdwdym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
+    allocate (dudydvdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dudzdwdxm(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3))) 
+    allocate (dvdzdwdym(xstS(1):xenS(1),xstS(2):xenS(2),xstS(3):xenS(3)))
 
     !arrays for visualization!pay attention to the size!
     allocate (uvisu(xstV(1):xenV(1),xstV(2):xenV(2),xstV(3):xenV(3)))

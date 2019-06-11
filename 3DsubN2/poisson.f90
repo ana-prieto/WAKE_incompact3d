@@ -1408,6 +1408,7 @@ contains
 
   
   subroutine abxyz(ax,ay,az,bx,by,bz,nx,ny,nz,bcx,bcy,bcz)
+	
     use param
 
     implicit none

@@ -175,6 +175,41 @@ PROGRAM incompact3d
                 ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG,uvisu)
      endif
 
+
+     !!3D STATS 
+!     call STATISTIC(ux1,uy1,uz1,phi1,ta1,umean,vmean,wmean,phimean,uumean,vvmean,wwmean,&
+!          uvmean,uwmean,vwmean,phiphimean,tmean)
+!
+!     call STAT_PRE (pp3,ta1,tb1,di1,ta2,tb2,di2,&
+!          ta3,di3,nxmsize,nymsize,nzmsize,phG,ph2,ph3,pmean,tmean)
+!
+!     call STAT_EPS (ux1,uy1,uz1,&
+!          dudxm,dudym,dudzm,&
+!          dvdxm,dvdym,dvdzm,&
+!          dwdxm,dwdym,dwdzm,&
+!          dudx2m,dudy2m,dudz2m,&
+!          dvdx2m,dvdy2m,dvdz2m,&
+!          dwdx2m,dwdy2m,dwdz2m,&
+!          dudydvdxm,dudzdwdxm,dvdzdwdym,tempgrad,&
+!          tmean,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
+!          ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
+!          ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG)
+     !!
+
+
+
+
+!!$   !!SLICES STATS
+!!$   call  STATISTIC_SLICE(ux1,uy1,uz1,phi1,ta1,umean,vmean,wmean,phimean,uumean,vvmean,wwmean,&
+!!$        uvmean,uwmean,vwmean,phiphimean,tmean)
+!!$
+!!$   call STAT_EPS_SLICE  (ux1,uy1,uz1,epsfull,epsthi,epsaxi,epsfullm,epsthim,epsaxim,tmean,&
+!!$     ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
+!!$     ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
+!!$     ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG)
+!!$   !!
+
+
 1042 format(I6)
      if (mod(itime,isave)==0) then 
         call restart(ux1,uy1,uz1,ep1,pp3,phi1,gx1,gy1,gz1,&
@@ -207,9 +242,9 @@ PROGRAM incompact3d
 
 
      !PROBES 
-     call VISU_INSTA(ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
-          ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
-          ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG,uvisu)
+!     call VISU_INSTA(ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1,&
+!          ta2,tb2,tc2,td2,te2,tf2,tg2,th2,ti2,tj2,di2,&
+!          ta3,tb3,tc3,td3,te3,tf3,tg3,th3,ti3,di3,phG,uvisu)
 
 
 !!$     !collection of u,v,w,phi (and p eventually) using idata
