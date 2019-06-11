@@ -374,6 +374,7 @@ endif
 !############################################################################
 end subroutine VISU_INSTA
 
+
 !############################################################################
 !
 subroutine PROBE(ux1,uy1,uz1,phi1,uprobe,uprobe_write,vprobe_write,wprobe_write,phiprobe_write)
@@ -761,7 +762,7 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
   !COMPUTE VORTICITY MAGNITUDE IN di1
 !   di1=0.; Oa1=0.;Ob1=0.;Oc1=0.;
 
-!  do k=1,xsize(3)
+!   do k=1,xsize(3)
 !   do j=1,xsize(2)
 !   do i=1,xsize(1)
 !     Oa1(i,j,k) = (tf1(i,j,k)-th1(i,j,k))
@@ -772,7 +773,7 @@ subroutine VISU_SLICE  (ux1,uy1,uz1,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1,ti1,di1
 
 !   do k=1,xsize(3)
 !   do j=1,xsize(2)
-!  do i=1,xsize(1)
+!   do i=1,xsize(1)
 !     di1(i,j,k) = ux1(i,j,k)*Oa1(i,j,k) + uy1(i,j,k)*Ob1(i,j,k) + &
 !                 uz1(i,j,k)*Oc1(i,j,k)
 !   enddo; enddo
@@ -948,6 +949,7 @@ subroutine VISU_SUBDOMAIN  (ux1,uy1,uz1,ppx,phi1,ta1,tb1,tc1,td1,te1,tf1,tg1,th1
 end subroutine VISU_SUBDOMAIN
 
 !############################################################################
+###########################################################################
 !
 subroutine PRE_SLICE (pp3,ta1,tb1,di1,ta2,tb2,di2,&
      ta3,di3,nxmsize,nymsize,nzmsize,phG,ph2,ph3,uvisu)

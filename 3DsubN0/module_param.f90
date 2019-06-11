@@ -17,7 +17,7 @@ module variables
 !4-->every 4 mesh nodes
 !nvisu = size for visualization collection
 !nprobe =  size for probe collection (energy spectra)
-integer,parameter :: nx=961,ny=120,nz=120
+integer,parameter :: nx=3841,ny=480,nz=480
 integer,parameter :: nstat=2,nvisu=1,nprobe=4,nlength=1
 integer,parameter :: p_row=3,p_col=4
 integer,parameter :: nxm=nx-1,nym=ny,nzm=nz 

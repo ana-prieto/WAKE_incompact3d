@@ -23,7 +23,7 @@ module decomp_2d_io
   interface decomp_2d_write_var
      module procedure write_var ! write a variable of default global size
      module procedure write_var_decomp !         of specified global size
-  end interface	
+  end interface
 
   interface decomp_2d_read_var
      module procedure read_var  ! write a variable of default global size
@@ -1093,20 +1093,15 @@ contains
     key = 0  ! rank order doesn't matter    
     ! The current subroutine only work for the X Pencil
 
-    ! global locations   
-    !sst(1) =1281; sen(1) =1921 ! (30Lb,50Lb)
-    ! the process to get it is 3841/120=32 then 3841/2=1921 =50Lb from this -20Lb (32*2) and same for other 
-    ! interval
-   
-    sst(1) =321 ;sen(1) =481 ! (30Lb,50Lb)
-    sst(2) =49; sen(3)=73 
-    !sst(2) = 193; sen(2) = 289 ! (-1.5Lb,1.5Lb)
-    !sst(3) = 193; sen(3) = 289 ! (-1.5Lb,1.5Lb)
-    sst(3) =49 ; sen(3) = 73
-    
+  ! the process to get it is 3841/120=32 then 3841/2=1921 =50Lb from this -20Lb (32*2) and same for other 
+  ! interval
 
-    !ss2(1) =2241; se2(1) =2881 ! (60Lb,80Lb)
-    ss2(1) =561; se2(1)=721 !(60,80Lb)
+    ! global locations   
+    sst(1) = 1281; sen(1) = 1601 ! (30Lb,40Lb)
+    sst(2) = 241; sen(2) = 337 ! (0Lb,3Lb)
+    sst(3) = 145; sen(3) = 337 ! (-3Lb,3Lb)
+
+    ss2(1) = 2561; se2(1) = 2881 ! (70Lb,80Lb)
 
     ! local locations     
     do i=1,3
@@ -1125,22 +1120,22 @@ contains
        If(xstart(i).LE.sst(i) .And. xend(i).GE.sst(i))        then
           xst(i) = 1
           xen(i) = xend(i)-sst(i)+1 
-	  xsz(i) = xen (i)-xst(i)+1
+          xsz(i) = xen (i)-xst(i)+1
           Color = 1
-       Else if (xstart(i).GE.sst(i) .And. xend(i).lE.sen(i))  then	  
+       Else if (xstart(i).GE.sst(i) .And. xend(i).lE.sen(i))  then  
           xst(i) = xstart(i)-sst(i)+1
           xen(i) = xend  (i)-sst(i)+1
-	  xsz(i) = xen   (i)-xst(i)+1	  
+          xsz(i) = xen   (i)-xst(i)+1  
           Color = 1
-       Else if (xstart(i).LE.sen(i) .And. xend(i).GE. sen(i))  then	  
-	  xst(i) = xstart(i)-sst(i)+1
+       Else if (xstart(i).LE.sen(i) .And. xend(i).GE. sen(i))  then
+          xst(i) = xstart(i)-sst(i)+1
           xen(i) = sen   (i)-sst(i)+1
-	  xsz(i) = xen   (i)-xst(i)+1
+          xsz(i) = xen   (i)-xst(i)+1
           Color = 1
        Else 
           xst(i) = 0
           xen(i) = 0 
-	  xsz(i) = 0 
+          xsz(i) = 0 
           Color  = 0
        End If  
     end do
@@ -1150,22 +1145,22 @@ contains
        If(xstart(i).LE.sst(i) .And. xend(i).GE.sst(i))        then
           xst(i) = 1
           xen(i) = xend(i)-sst(i)+1 
-	  xsz(i) = xen (i)-xst(i)+1
+          xsz(i) = xen (i)-xst(i)+1
           Color = 2
-       Else if (xstart(i).GE.sst(i) .And. xend(i).lE.sen(i))  then	  
+       Else if (xstart(i).GE.sst(i) .And. xend(i).lE.sen(i))  then  
           xst(i) = xstart(i)-sst(i)+1
           xen(i) = xend  (i)-sst(i)+1
-	  xsz(i) = xen   (i)-xst(i)+1	  
+          xsz(i) = xen   (i)-xst(i)+1  
           Color = 2
-       Else if (xstart(i).LE.sen(i) .And. xend(i).GE. sen(i))  then	  
-	  xst(i) = xstart(i)-sst(i)+1
+       Else if (xstart(i).LE.sen(i) .And. xend(i).GE. sen(i))  then 
+          xst(i) = xstart(i)-sst(i)+1
           xen(i) = sen   (i)-sst(i)+1
-	  xsz(i) = xen   (i)-xst(i)+1
+          xsz(i) = xen   (i)-xst(i)+1
           Color = 2
        Else 
           xst(i) = 0
           xen(i) = 0 
-	  xsz(i) = 0 
+          xsz(i) = 0 
           Color  = 0
        End If 
      End If 
@@ -1197,9 +1192,9 @@ contains
         allocate(wk(xst(1):xen(1)+7*xsz(1),xst(2):xen(2),xst(3):xen(3)))
         allocate(wk2(xstart(1):xend(1),xstart(2):xend(2),xstart(3):xend(3)))
         
-	wk2=var0
+        wk2=var0
              
-	Do k=xst(3),xen(3)
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1),xen(1)
           wk(i,j,k) = wk2(i+sst(1)-1-0*xsz(1),j+sst(2)-1,k+sst(3)-1)
@@ -1208,7 +1203,7 @@ contains
 
         wk2=var1
              
-	Do k=xst(3),xen(3)
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1)+1*xsz(1),xen(1)+1*xsz(1)
           wk(i,j,k) = wk2(i+sst(1)-1-1*xsz(1),j+sst(2)-1,k+sst(3)-1)
@@ -1217,7 +1212,7 @@ contains
 
         wk2=var2
              
-	Do k=xst(3),xen(3)
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1)+2*xsz(1),xen(1)+2*xsz(1)
           wk(i,j,k) = wk2(i+sst(1)-1-2*xsz(1),j+sst(2)-1,k+sst(3)-1)
@@ -1226,7 +1221,7 @@ contains
 
         wk2=var3
              
-	Do k=xst(3),xen(3)
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1)+3*xsz(1),xen(1)+3*xsz(1)
           wk(i,j,k) = wk2(i+sst(1)-1-3*xsz(1),j+sst(2)-1,k+sst(3)-1)
@@ -1236,7 +1231,7 @@ contains
 
         wk2=var0
              
-	Do k=xst(3),xen(3)
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1)+4*xsz(1),xen(1)+4*xsz(1)
           wk(i,j,k) = wk2(i+ss2(1)-1-4*xsz(1),j+sst(2)-1,k+sst(3)-1)
@@ -1244,8 +1239,8 @@ contains
         End do
 
         wk2=var1
-             
-	Do k=xst(3),xen(3)
+        
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1)+5*xsz(1),xen(1)+5*xsz(1)
           wk(i,j,k) = wk2(i+ss2(1)-1-5*xsz(1),j+sst(2)-1,k+sst(3)-1)
@@ -1254,7 +1249,7 @@ contains
 
         wk2=var2
              
-	Do k=xst(3),xen(3)
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1)+6*xsz(1),xen(1)+6*xsz(1)
           wk(i,j,k) = wk2(i+ss2(1)-1-6*xsz(1),j+sst(2)-1,k+sst(3)-1)
@@ -1263,7 +1258,7 @@ contains
 
         wk2=var3
              
-	Do k=xst(3),xen(3)
+        Do k=xst(3),xen(3)
         Do j=xst(2),xen(2)
         Do i=xst(1)+7*xsz(1),xen(1)+7*xsz(1)
           wk(i,j,k) = wk2(i+ss2(1)-1-7*xsz(1),j+sst(2)-1,k+sst(3)-1)

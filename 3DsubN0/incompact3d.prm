@@ -31,7 +31,7 @@
 # INCOMPACT 3D File parameters 
 #
 ../TEST5    #filepath # Relative data path
-1
+1           #irestart
 sauve.dat   #filestart# Name of initial flow field
 5000       #isave    # Frequency for writing backup file (100) 
 1000       #imodulo  # Frequency for visualization for VISU_INSTA (200)

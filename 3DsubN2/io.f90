@@ -1093,6 +1093,9 @@ contains
     key = 0  ! rank order doesn't matter    
     ! The current subroutine only work for the X Pencil
 
+  ! the process to get it is 3841/120=32 then 3841/2=1921 =50Lb from this -20Lb (32*2) and same for other 
+  ! interval
+
     ! global locations   
     sst(1) = 1281; sen(1) = 1601 ! (30Lb,40Lb)
     sst(2) = 241; sen(2) = 337 ! (0Lb,3Lb)

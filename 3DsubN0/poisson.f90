@@ -976,7 +976,7 @@ contains
 
     implicit none
 
-    integer, intent(IN) :: nclz1	
+    integer, intent(IN) :: nclz1
     real(mytype), dimension(:,:,:), intent(INOUT) :: rhs
 
     complex(mytype) :: xyzk
@@ -990,7 +990,7 @@ contains
     nx = nx_global - 1
     ny = ny_global - 1
 
-    if (nclz1==1) then	
+    if (nclz1==1) then
        nz = nz_global - 1
     else if (nclz1==0) then
        nz = nz_global
